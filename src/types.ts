@@ -32,6 +32,7 @@ export interface SheetConfig {
   customQuestions?: CustomQuestion[]; // Custom questions configuration
   senderEmail?: string;     // Sender Gmail address
   senderAppPass?: string;   // Gmail App Password
+  backendUrl?: string;      // Custom API Backend URL for deployments like GitHub Pages
 }
 
 export interface PreorderItem {

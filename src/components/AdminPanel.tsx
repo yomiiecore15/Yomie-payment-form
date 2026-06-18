@@ -7,7 +7,7 @@ import {
   CreditCard, Search, Link, Bell, FileText, Trash2, ShoppingBag,
   Plus
 } from 'lucide-react';
-import { extractSpreadsheetId, APPS_SCRIPT_TEMPLATE } from '../sampleData';
+import { extractSpreadsheetId, APPS_SCRIPT_TEMPLATE, getBackendUrl, getAbsoluteBackendUrl } from '../sampleData';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -42,6 +42,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>(config.customQuestions || []);
   const [senderEmail, setSenderEmail] = useState(config.senderEmail || '');
   const [senderAppPass, setSenderAppPass] = useState(config.senderAppPass || '');
+  const [backendUrl, setBackendUrl] = useState(config.backendUrl || '');
 
   // Connection testing states
   const [isTesting, setIsTesting] = useState(false);
@@ -62,7 +63,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const syncTokenWithServer = async (token: string) => {
     if (!token || !token.trim()) return;
     try {
-      await fetch("/api/update-line-token", {
+      await fetch(`${getBackendUrl(config.backendUrl)}/api/update-line-token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: token.trim() })
@@ -75,7 +76,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const fetchWebhookEvents = async () => {
     setIsFetchingEvents(true);
     try {
-      const res = await fetch("/api/latest-line-events");
+      const res = await fetch(`${getBackendUrl(config.backendUrl)}/api/latest-line-events`);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -104,6 +105,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setCustomQuestions(config.customQuestions || []);
     setSenderEmail(config.senderEmail || '');
     setSenderAppPass(config.senderAppPass || '');
+    setBackendUrl(config.backendUrl || '');
     
     // Fetch local orders history representing the sheet's backups
     const savedOrders = localStorage.getItem('yomie_orders_history_v2');
@@ -172,7 +174,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     try {
-      const res = await fetch("/api/submit-order", {
+      const res = await fetch(`${getBackendUrl(config.backendUrl)}/api/submit-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(testPayload)
@@ -268,7 +270,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       promptPay: promptPay.trim(),
       customQuestions: customQuestions,
       senderEmail: senderEmail.trim(),
-      senderAppPass: senderAppPass.trim()
+      senderAppPass: senderAppPass.trim(),
+      backendUrl: backendUrl.trim()
     });
     
     onClose();
@@ -386,6 +389,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </p>
                 </div>
 
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[11px] font-bold text-gray-700 block">API Server Backend URL (สำหรับ GitHub Pages)</label>
+                    <span className="text-[10px] text-emerald-600 font-bold font-sans">เชื่อมต่อข้ามเซิร์ฟเวอร์</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="https://ais-pre-....run.app"
+                    value={backendUrl}
+                    onChange={(e) => setBackendUrl(e.target.value)}
+                    className="w-full text-xs p-3 border border-gray-200 focus:border-[#eb5e45] rounded-xl text-gray-900 font-mono"
+                  />
+                  <p className="text-[10px] text-gray-400 leading-normal">
+                    ใส่ลิงก์ URL เซิร์ฟเวอร์หลังบ้านใน AI Studio (ที่มีคำว่า <code>-pre-</code> หรือเซิร์ฟเวอร์ที่ติดตั้งแยก) เพื่อรองรับการกดส่งข้อมูล และสลิปจาก <strong>GitHub Pages</strong> หรือโดเมนหน้าบ้านภายนอกอื่นสิทธิ์ CORS จะเปิดให้อัตโนมัติค่ะ
+                  </p>
+                </div>
+
                 <div className="space-y-4 pt-3 border-t border-gray-100 text-left">
                   <div className="flex justify-between items-center mb-1">
                     <label className="text-[11px] font-black text-[#db5984] tracking-wider uppercase font-mono flex items-center gap-1.5">
@@ -415,17 +435,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             </p>
                             <div className="my-2 p-2 bg-white rounded-lg border border-emerald-300 font-mono text-[10px] break-all relative group text-emerald-850">
                               {lineChannelAccessToken.trim() ? (
-                                <span>{`${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`}</span>
+                                <span>{`${getAbsoluteBackendUrl(config.backendUrl)}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`}</span>
                               ) : (
-                                <span className="text-gray-400">{`${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`}</span>
+                                <span className="text-gray-400">{`${getAbsoluteBackendUrl(config.backendUrl)}/api/line-webhook`}</span>
                               )}
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const urlToCopy = lineChannelAccessToken.trim()
-                                    ? `${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`
-                                    : `${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`;
-                                  const activeUrl = urlToCopy.replace("-dev-", "-pre-");
+                                  const activeUrl = lineChannelAccessToken.trim()
+                                    ? `${getAbsoluteBackendUrl(config.backendUrl)}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`
+                                    : `${getAbsoluteBackendUrl(config.backendUrl)}/api/line-webhook`;
                                   try {
                                     const textEl = document.createElement("input");
                                     textEl.value = activeUrl;
@@ -452,11 +471,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               หากคุณกรอกและกดบันทึกรหัส <strong>LINE Channel Access Token</strong> ในหน้านี้สำเร็จแล้ว คุณสามารถเอารหัส Token ออกจากท้าย URL แล้วใช้ทางลัดลิงก์สั้น ๆ นี้ได้เลยค่ะ ปลอดภัยและเหมาะกับบอทระยะยาวด้วย:
                             </p>
                             <div className="my-2 p-2 bg-white rounded-lg border border-indigo-200 font-mono text-[10px] break-all relative group text-indigo-800">
-                              <span>{`${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`}</span>
+                              <span>{`${getAbsoluteBackendUrl(config.backendUrl)}/api/line-webhook`}</span>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const urlToCopy = `${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`;
+                                  const urlToCopy = `${getAbsoluteBackendUrl(config.backendUrl)}/api/line-webhook`;
                                   try {
                                     const textEl = document.createElement("input");
                                     textEl.value = urlToCopy;

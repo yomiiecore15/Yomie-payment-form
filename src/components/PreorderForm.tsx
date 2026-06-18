@@ -7,7 +7,7 @@ import {
   Copy, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { extractSpreadsheetId, buildQueryUrl, parsePostalCodeGvizData, SAMPLE_POSTAL_CODES } from '../sampleData';
+import { extractSpreadsheetId, buildQueryUrl, parsePostalCodeGvizData, SAMPLE_POSTAL_CODES, getBackendUrl, getAbsoluteBackendUrl } from '../sampleData';
 
 const parseShippingText = (text: string) => {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
@@ -466,7 +466,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
       shippingInfo: shippingInfo.trim(),
       customAnswers: customAnswersArray,
       customFieldsSummary: customFieldsSummary || undefined,
-      originUrl: window.location.origin,
+      originUrl: getAbsoluteBackendUrl(config.backendUrl),
       // Pass config webhooks to let full-stack proxy forward real-time + smtp details
       appsScriptUrl: config.appsScriptUrl,
       lineToken: config.lineToken,
@@ -478,7 +478,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
     };
 
     try {
-      const response = await fetch("/api/submit-order", {
+      const response = await fetch(`${getBackendUrl(config.backendUrl)}/api/submit-order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

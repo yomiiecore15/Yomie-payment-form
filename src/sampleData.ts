@@ -28,7 +28,38 @@ export const INITIAL_CONFIG: SheetConfig = {
   customQuestions: [],
   senderEmail: "",
   senderAppPass: "",
+  backendUrl: "",
 };
+
+/**
+ * Resolves the correct backend URL dynamically.
+ * If running on Cloud Run, use relative paths.
+ * If running on a custom domain/GitHub Pages, use the saved backendUrl or fall back to the live Cloud Run production URL.
+ */
+export function getBackendUrl(configBackendUrl?: string): string {
+  if (configBackendUrl && configBackendUrl.trim() !== "") {
+    const trimmed = configBackendUrl.trim();
+    return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+  }
+  if (window.location.hostname.includes("run.app")) {
+    return "";
+  }
+  return "https://ais-pre-p5qo4jin4iijbtadrngbhz-980569590057.asia-southeast1.run.app";
+}
+
+/**
+ * Returns a guaranteed absolute backend base URL (critical for LINE webhooks, slip images, etc.)
+ */
+export function getAbsoluteBackendUrl(configBackendUrl?: string): string {
+  if (configBackendUrl && configBackendUrl.trim() !== "") {
+    const trimmed = configBackendUrl.trim();
+    return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+  }
+  if (window.location.hostname.includes("run.app")) {
+    return window.location.origin;
+  }
+  return "https://ais-pre-p5qo4jin4iijbtadrngbhz-980569590057.asia-southeast1.run.app";
+}
 
 // Rich Thai Postal Codes Mocking Database for flawless demo/fallback
 export const SAMPLE_POSTAL_CODES: PostalCodeData[] = [
