@@ -335,6 +335,19 @@ export default function App() {
                         </span>
                       </div>
 
+                      {submittedOrder.submitLogs && submittedOrder.submitLogs.length > 0 && (
+                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-150 mt-2 max-h-32 overflow-y-auto">
+                          <p className="text-[9px] text-[#db5984] font-bold uppercase tracking-wide mb-1">🔍 บันทึกสถานะระบบหลังบ้าน (System Logs)</p>
+                          <ul className="space-y-1 text-[11px] font-medium leading-relaxed font-sans">
+                            {submittedOrder.submitLogs.map((log: string, idx: number) => (
+                              <li key={idx} className={log.includes("⚠️") || log.includes("ล้มเหลว") || log.includes("ผิดพลาด") ? "text-red-500 flex items-start gap-1" : "text-emerald-600 flex items-start gap-1"}>
+                                <span>•</span>
+                                <span>{log}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
 
                     </div>
                   </div>
