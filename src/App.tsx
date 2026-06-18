@@ -52,6 +52,13 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        // Automatically default/migrate empty Apps Script Web Hook URL to user's deployment
+        if (!parsed.appsScriptUrl || parsed.appsScriptUrl.trim() === "") {
+          parsed.appsScriptUrl = INITIAL_CONFIG.appsScriptUrl;
+          parsed.isConfigured = true;
+        }
+        // Save the migrated config
+        localStorage.setItem('yomie_postal_config_v2', JSON.stringify(parsed));
         setConfig(parsed);
       } catch (e) {
         console.error('Failed to parse saved config.', e);

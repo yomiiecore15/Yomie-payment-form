@@ -365,14 +365,15 @@ async function startServer() {
 
   // Submit Preorder Order Route
   app.post("/api/submit-order", async (req, res) => {
-    const data: OrderSubmission = req.body;
+    try {
+      const data: OrderSubmission = req.body;
 
-    if (!data.name || !data.phone || !data.items || data.items.length === 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วนด้วยนะคะ (ชื่อ, เบอร์โทร, รายการสินค้า)" 
-      });
-    }
+      if (!data.name || !data.phone || !data.items || data.items.length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วนด้วยนะคะ (ชื่อ, เบอร์โทร, รายการสินค้า)" 
+        });
+      }
 
     const { appsScriptUrl, lineToken, lineChannelAccessToken, lineGroupId, senderEmail, senderAppPass, shopName, ...cleanPayload } = data;
 
@@ -478,7 +479,7 @@ async function startServer() {
       try {
 
         const formattedItems = cleanPayload.items.map((it) => {
-          return it.itemName.trim();
+          return (it.itemName || "").trim();
         }).join("\n");
 
         const addressToDisplay = (cleanPayload.shippingInfo || "").trim();
@@ -690,16 +691,23 @@ ${addressToDisplay}
     const activeSenderEmail = (senderEmail && senderEmail.trim() !== "") ? senderEmail.trim() : process.env.SMTP_USER;
     const activeSenderPass = (senderAppPass && senderAppPass.trim() !== "") ? senderAppPass.trim() : process.env.SMTP_PASS;
 
-    return res.json({
-      success: true,
-      spreadsheetConnected: !!activeAppsScriptUrl,
-      lineConnected: !!activeLineToken || (!!activeLineChannelAccessToken && !!activeLineGroupId),
-      emailConnected: !!cleanPayload.customerGmail && !!activeSenderEmail && !!activeSenderPass,
-      spreadsheetSuccess,
-      lineSuccess,
-      emailSuccess,
-      logs
-    });
+      return res.json({
+        success: true,
+        spreadsheetConnected: !!activeAppsScriptUrl,
+        lineConnected: !!activeLineToken || (!!activeLineChannelAccessToken && !!activeLineGroupId),
+        emailConnected: !!cleanPayload.customerGmail && !!activeSenderEmail && !!activeSenderPass,
+        spreadsheetSuccess,
+        lineSuccess,
+        emailSuccess,
+        logs
+      });
+    } catch (globalErr: any) {
+      console.error("CRITICAL ERROR inside /api/submit-order:", globalErr);
+      return res.status(500).json({
+        success: false,
+        message: `เกิดข้อผิดพลาดรุนแรงในการประมวลผลข้อมูล: ${globalErr.message || globalErr}`
+      });
+    }
   });
 
   // Vite middleware for development
