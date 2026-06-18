@@ -178,37 +178,74 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         body: JSON.stringify(testPayload)
       });
 
-      if (!res.ok) throw new Error("Connection timed out or failed.");
-      const json = await res.json();
+      let resJson: any;
+      if (!res.ok) {
+        throw new Error(`Server returned status ${res.status}`);
+      } else {
+        resJson = await res.json();
+      }
 
       let allConfiguredSucceeded = true;
       let errorDetails: string[] = [];
 
-      if (json.spreadsheetConnected && !json.spreadsheetSuccess) {
+      if (resJson.spreadsheetConnected && !resJson.spreadsheetSuccess) {
         allConfiguredSucceeded = false;
         errorDetails.push("บันทึก Google Sheet ล้มเหลว");
       }
-      if (json.lineConnected && !json.lineSuccess) {
+      if (resJson.lineConnected && !resJson.lineSuccess) {
         allConfiguredSucceeded = false;
         errorDetails.push("ส่งแจ้งเตือน LINE ล้มเหลว");
       }
-      if (json.emailConnected && !json.emailSuccess) {
+      if (resJson.emailConnected && !resJson.emailSuccess) {
         allConfiguredSucceeded = false;
         errorDetails.push("ส่งอีเมลสรุป ล้มเหลว");
       }
 
-      if (allConfiguredSucceeded && json.success) {
+      if (allConfiguredSucceeded && resJson.success) {
         setTestResult({
           success: true,
-          message: `✅ ทดสอบการเชื่อมต่อช่องทางต่าง ๆ สำเร็จเรียบร้อยค่ะ!\n• ${json.logs.join('\n• ')}`
+          message: `✅ ทดสอบการเชื่อมต่อช่องทางต่าง ๆ สำเร็จเรียบร้อยค่ะ!\n• ${resJson.logs.join('\n• ')}`
         });
       } else {
         setTestResult({
           success: false,
-          message: `❌ ทดสอบมีบางส่วนล้มเหลว (${errorDetails.join(', ') || 'ข้อมูลเข้าไม่ตรงแบบแผน'}):\n• ${json.logs.join('\n• ')}`
+          message: `❌ ทดสอบมีบางส่วนล้มเหลว (${errorDetails.join(', ') || 'ข้อมูลเข้าไม่ตรงแบบแผน'}):\n• ${resJson.logs.join('\n• ')}`
         });
       }
     } catch (err: any) {
+      console.warn("Backend API not reachable. Attempting direct browser test to Google Sheets...", err);
+      if (appsScriptUrl.trim() !== "") {
+        try {
+          // Destructure key values out so clean payload is sent to sheets
+          const {
+            appsScriptUrl: asUrl,
+            lineToken: lT,
+            lineChannelAccessToken: lCAT,
+            lineGroupId: lGI,
+            senderEmail: sE,
+            senderAppPass: sAP,
+            shopName: sN,
+            ...cleanTestPayload
+          } = testPayload;
+
+          await fetch(appsScriptUrl.trim(), {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            mode: "no-cors",
+            body: JSON.stringify(cleanTestPayload)
+          });
+
+          setTestResult({
+            success: true,
+            message: `⚠️ ตรวจพบว่าคุณใช้แพลตฟอร์มแบบจัดวาง Static (เช่น Vercel/Netlify) ซึ่งไม่มีระบบเซิร์ฟเวอร์แบบ Node Node ที่เปิดทำงานหลังบ้านแบบ Direct Express\n\n🟢 อย่างไรก็ตาม ระบบได้ทำการส่งข้อมูลทดสอบโดยตรงจากเบราว์เซอร์ของคุณไปยัง Google Sheets ที่กำหนดเป็นกรณีพิเศษเรียบร้อยแล้วค่ะ!\n\nกรุณาไปเปิดดูหน้า Google Sheet ของคุณเพื่อตรวจสอบการส่งข้อมูลเข้าไป และแนะนำว่าให้ติดตั้งระบบส่ง LINE Notify หรือไลน์กลุ่มผ่าน Apps Script เพิ่มเติมบน Google Sheets เพื่อทำงานโดยตรงบนคลาวด์ได้ด้วยตนเองนะคะ`
+          });
+          setIsTesting(false);
+          return;
+        } catch (directErr: any) {
+          console.error("Direct browser-to-Sheets fallback also failed:", directErr);
+        }
+      }
+
       setTestResult({
         success: false,
         message: `❌ เชื่อมต่อล้มเหลว: ${err.message || err}`

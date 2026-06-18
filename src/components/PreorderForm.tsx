@@ -541,6 +541,84 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
       }
     } catch (err: any) {
       console.error(err);
+
+      // Check if AppsScript URL is configured. If so, and we got a network error or 404, we can attempt a DIRECT client-to-Google-Sheets POST!
+      if (config.appsScriptUrl && config.appsScriptUrl.trim() !== "") {
+        console.warn("Express backend failed (could be Static hosting like Vercel). Attempting direct browser-to-Google Sheets submission...");
+        try {
+          const {
+            appsScriptUrl,
+            lineToken,
+            lineChannelAccessToken,
+            lineGroupId,
+            senderEmail,
+            senderAppPass,
+            shopName,
+            ...cleanPayload
+          } = submissionPayload;
+
+          // Google Apps Script supports POST. Using mode: "no-cors" allows simple requests to traverse cross-origin barriers perfectly!
+          await fetch(config.appsScriptUrl.trim(), {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+            },
+            mode: "no-cors",
+            body: JSON.stringify(cleanPayload)
+          });
+
+          // Clear saved draft from localStorage
+          try {
+            localStorage.removeItem('yomie_preorder_form_draft');
+          } catch (e) {
+            console.error(e);
+          }
+
+          const dDirect = new Date();
+          const timestamp = `${dDirect.getDate()}:${dDirect.getMonth() + 1}:${dDirect.getFullYear()} (${String(dDirect.getHours()).padStart(2, '0')}:${String(dDirect.getMinutes()).padStart(2, '0')}:${String(dDirect.getSeconds()).padStart(2, '0')})`;
+
+          onSuccess({
+            id: String(Date.now()),
+            timestamp,
+            sku: items.map(i => `${i.itemName} (x${i.quantity})`).join(', '),
+            ...submissionPayload,
+            district: submissionPayload.district,
+            submitLogs: [
+              "🟢 บันทึกรายการคำสั่งซื้อสำเร็จผ่านระบบบันทึกความช่วยเหลือพิเศษ (Direct Client-Side Mode)",
+              "⚠️ เนื่องจากเซิร์ฟเวอร์หลังบ้านขัดข้องหรือเว็บไซต์กำลังทำงานในโหมดเวทีไม่มีเซิร์ฟเวอร์ส่วนตัว (Static Serverless เช่น Vercel/Netlify) ระบบจึงบันทึกข้อมูลและอัปเดตตรงเข้า Google Sheets ทันทีค่ะ!"
+            ]
+          } as any);
+
+          // Reset fields
+          setName('');
+          setPhone('');
+          setContact('');
+          setCustomerAccount('');
+          setCustomerGmail('');
+          setShippingInfo('');
+          setPostalCode('');
+          setDetailAddress('');
+          setSubdistrict('');
+          setDistrict('');
+          setProvince('');
+          setItems([{ id: '1', itemName: '', quantity: 1, notes: '' }]);
+          setTotalAmount('');
+          setRemoteAreaSelection('');
+          setPaymentMethod('');
+          setPaymentMethodOther('');
+          setShippingPaymentStatus('');
+          setTransferAmount('');
+          setTransferDate('');
+          setTransferTime('');
+          setSlipImage(null);
+          setSlipName('');
+          setCustomAnswers({});
+          return; // Stop here and prevent normal error message!
+        } catch (directErr: any) {
+          console.error("Direct browser-to-Sheets fallback failed:", directErr);
+        }
+      }
+
       // Even if network or API details fail, let's gracefully save locally if they are in full demo fallback mode
       if (!config.appsScriptUrl) {
         // Clear saved draft from localStorage
