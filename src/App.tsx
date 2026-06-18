@@ -265,14 +265,14 @@ export default function App() {
 
                   {/* Icon Status */}
                   <div className="text-center space-y-2.5 pb-5 border-b border-dashed border-gray-150 pt-3">
-                    <div className="w-14 h-14 bg-transparent border-2 border-green-200 rounded-full mx-auto flex items-center justify-center text-green-500 animate-bounce">
+                    <div className="w-14 h-14 bg-transparent border-2 border-green-200 rounded-full mx-auto flex items-center justify-center text-green-500">
                       <CheckCircle2 className="w-8 h-8" />
                     </div>
                     <h2 className="text-[#152033] text-xl sm:text-2xl font-extrabold tracking-wide font-sans">
                       บันทึกรายการสำเร็จ ♡
                     </h2>
                     <p className="text-gray-550 text-xs sm:text-sm font-medium font-sans max-w-sm mx-auto">
-                      ระบบได้บันทึกข้อมูลเรียบร้อยค่า จะทำการอัพเดทในเว็บภายใน 1-3 วันนะคะ
+                      บันทึกข้อมูล และส่งใบสรุปรายการช่องทางเมลเรียบร้อยค่า จะทำการอัพเดทสถานะในเว็บภายใน 1-3 วันนะคะ
                     </p>
                   </div>
 
@@ -280,7 +280,7 @@ export default function App() {
                   <div className="py-5 space-y-4 text-xs font-sans text-left">
                     <h4 className="text-sm font-black text-gray-850 flex items-center gap-1">
                       <FileText className="w-4 h-4 text-[#eb5e45]" />
-                      สรุปข้อมูลออเดอร์
+                      สรุปออเดอร์
                     </h4>
 
                     <div className="bg-gray-50/75 p-4 rounded-2xl border border-gray-150 space-y-3">
@@ -328,26 +328,7 @@ export default function App() {
                         </span>
                       </div>
 
-                      {submittedOrder.submitLogs && Array.isArray(submittedOrder.submitLogs) && submittedOrder.submitLogs.length > 0 && (
-                        <div className="bg-amber-50/20 border border-dashed border-pink-150 rounded-2xl p-4 space-y-1.5 text-[11px] animate-fade-in text-left">
-                          <p className="font-extrabold text-pink-700 uppercase tracking-wider flex items-center gap-1.5 text-xs">
-                            💌 สถานะระบบหลังบ้าน (Integration Logs):
-                          </p>
-                          <ul className="list-none space-y-1.5 text-gray-650 font-sans leading-relaxed">
-                            {submittedOrder.submitLogs.map((log: string, idx: number) => {
-                              const isError = log.includes("⚠️") || log.includes("ผิดพลาด") || log.includes("ล้มเหลว");
-                              return (
-                                <li key={idx} className="flex items-start gap-1">
-                                  <span>{isError ? "⚠️" : "✓"}</span>
-                                  <span className={isError ? "text-red-500 font-bold" : "text-emerald-600 font-medium"}>
-                                    {log}
-                                  </span>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      )}
+
                     </div>
                   </div>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, RefreshCw, MapPin } from 'lucide-react';
+import { Settings, RefreshCw, ShoppingCart } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface HeaderProps {
@@ -25,9 +25,9 @@ export const Header: React.FC<HeaderProps> = ({ isConfigured, onOpenSettings, on
         
         {/* Left Side: YOMIÉ Brand Logo */}
         <div className="flex items-center space-x-2 sm:space-x-3" id="header-brand-container">
-          {/* MapPin icon inside squircle capsule */}
+          {/* ShoppingCart icon inside squircle capsule */}
           <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-2xl border-2 border-[#fcdce3] shadow-[0_4px_12px_rgba(244,114,182,0.15)] flex items-center justify-center group cursor-pointer active:scale-95 transition-all">
-            <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-[#ea5f8e] fill-[#ea5f8e]/20 group-hover:scale-110 transition-transform duration-300" />
+            <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-[#ea5f8e] fill-[#ea5f8e]/20 group-hover:scale-110 transition-transform duration-300" />
             <div className="absolute -inset-0.5 bg-pink-100 rounded-2xl opacity-10 blur-md pointer-events-none" />
           </div>
 

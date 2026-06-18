@@ -113,11 +113,60 @@ function doPost(e) {
     
     var remoteAreaStr = data.remoteAreaSelection || (data.isRemoteArea ? "อยู่ค่า" : "ไม่อยู่ค่ะ");
     
-    var imageFormula = "";
-    if (data.slipUrl) {
-      imageFormula = '=HYPERLINK("' + data.slipUrl + '", IMAGE("' + data.slipUrl + '"))';
-    } else {
-      imageFormula = data.slipBase64 ? "แนบสลิปเรียบร้อย" : "ไม่มีสลิป";
+    var finalSlipUrl = data.slipUrl || "";
+    var slipBlob = null;
+    
+    // Decodes base64 slip to insert directly and quietly upload to user's Google Drive
+    if (data.slipBase64 && typeof data.slipBase64 === "string" && data.slipBase64.includes("base64,")) {
+      try {
+        var parts = data.slipBase64.split("base64,");
+        var header = parts[0];
+        var base64Data = parts[1];
+        var contentType = "image/jpeg";
+        var mimeMatch = header.match(/data:([^;]+);/);
+        if (mimeMatch && mimeMatch[1]) {
+          contentType = mimeMatch[1];
+        }
+        
+        var ext = "jpg";
+        if (contentType.includes("png")) ext = "png";
+        else if (contentType.includes("gif")) ext = "gif";
+        else if (contentType.includes("webp")) ext = "webp";
+        
+        var decoded = Utilities.base64Decode(base64Data);
+        slipBlob = Utilities.newBlob(decoded, contentType, "slip_" + Date.now() + "." + ext);
+        
+        // Auto Upload Slip directly to User's own Google Drive as a cloud backup
+        try {
+          var folderName = "Yomie Slips";
+          var folders = DriveApp.getFoldersByName(folderName);
+          var folder;
+          if (folders.hasNext()) {
+            folder = folders.next();
+          } else {
+            folder = DriveApp.createFolder(folderName);
+          }
+          
+          var file = folder.createFile(slipBlob);
+          file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+          
+          // Direct Google Drive Image Url for full-screen fallback click
+          finalSlipUrl = "https://docs.google.com/uc?export=view&id=" + file.getId();
+        } catch (driveErr) {
+          // Safe fall back to public image url if Drive creation has restricted permissions
+        }
+      } catch (err) {
+        // Safe skip processing
+      }
+    }
+    
+    var cellValueForSlip = "ไม่มีสลิป";
+    if (data.slipBase64) {
+      if (finalSlipUrl) {
+        cellValueForSlip = '=HYPERLINK("' + finalSlipUrl + '", IMAGE("' + finalSlipUrl + '"))';
+      } else {
+        cellValueForSlip = "แนบสลิปเรียบร้อย";
+      }
     }
     
     sheet.appendRow([
@@ -134,16 +183,16 @@ function doPost(e) {
       data.transferAmount || 0,                  // K: ยอดโอน
       data.transferDateInSlip || "",             // L: วันที่โอน
       data.transferTimeInSlip || "",             // M: เวลาที่โอน
-      imageFormula,                              // N: สลิป
+      cellValueForSlip,                          // N: สลิป
       data.additionalNotes || ""                 // O: เพิ่มเติม
     ]);
     
-    // Adjust row height & alignment so that the slip image is beautifully visible
+    // Adjust row height & alignment so that the slip image in the cell is beautifully visible
     try {
       var lastRow = sheet.getLastRow();
-      sheet.setRowHeight(lastRow, 125);
+      sheet.setRowHeight(lastRow, 90);
       sheet.getRange(lastRow, 1, 1, 15).setWrap(true).setVerticalAlignment("middle");
-      sheet.setColumnWidth(14, 125); // Set slip column width to 125px for perfect aspect ratio display
+      sheet.setColumnWidth(14, 90); // Set slip column width to 90px for perfect aspect ratio display
     } catch (styleErr) {
       // Ignore styling errors safely
     }

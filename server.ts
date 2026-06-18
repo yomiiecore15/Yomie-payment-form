@@ -99,19 +99,45 @@ function saveTokenState(token: string) {
 }
 
 async function uploadToPublicHost(buffer: Buffer, contentType: string): Promise<string | null> {
-  // 1. Try Catbox.moe (Fast, stable, directly public raw url)
+  let ext = "jpg";
+  if (contentType.includes("png")) ext = "png";
+  else if (contentType.includes("gif")) ext = "gif";
+  else if (contentType.includes("webp")) ext = "webp";
+
+  // 1. Try Telegra.ph (Incredibly fast, raw direct hotlinking on telegraph CDN, perfect for LINE bots)
+  try {
+    console.log("[Image Upload] Attempting upload to telegra.ph...");
+    const formData = new FormData();
+    const file = new File([buffer], `slip_${Date.now()}.${ext}`, { type: contentType });
+    formData.append("file", file);
+
+    const response = await fetch("https://telegra.ph/upload", {
+      method: "POST",
+      body: formData,
+      signal: AbortSignal.timeout(10000)
+    });
+
+    if (response.ok) {
+      const json: any = await response.json();
+      if (Array.isArray(json) && json[0]?.path) {
+        const directUrl = `https://telegra.ph${json[0].path}`;
+        console.log(`[Image Upload] Successfully uploaded to Telegra.ph: ${directUrl}`);
+        return directUrl;
+      }
+    }
+    console.warn(`[Image Upload] Telegra.ph returned non-ok status: ${response.status}`);
+  } catch (err: any) {
+    console.error("[Image Upload] Telegra.ph upload error:", err.message || err);
+  }
+
+  // 2. Try Catbox.moe (Fast, stable, directly public raw url)
   try {
     console.log("[Image Upload] Attempting upload to catbox.moe...");
     const formData = new FormData();
     formData.append("reqtype", "fileupload");
     
-    let ext = "jpg";
-    if (contentType.includes("png")) ext = "png";
-    else if (contentType.includes("gif")) ext = "gif";
-    else if (contentType.includes("webp")) ext = "webp";
-    
-    const blob = new Blob([buffer], { type: contentType });
-    formData.append("fileToUpload", blob, `slip_${Date.now()}.${ext}`);
+    const file = new File([buffer], `slip_${Date.now()}.${ext}`, { type: contentType });
+    formData.append("fileToUpload", file);
     
     const response = await fetch("https://catbox.moe/user/api.php", {
       method: "POST",
@@ -131,14 +157,12 @@ async function uploadToPublicHost(buffer: Buffer, contentType: string): Promise<
     console.error("[Image Upload] Catbox upload error:", err.message || err);
   }
 
-  // 2. Try TmpFiles.org (Alternative fall-back)
+  // 3. Try TmpFiles.org (Alternative fallback)
   try {
     console.log("[Image Upload] Attempting upload to tmpfiles.org...");
     const formData = new FormData();
-    let ext = "jpg";
-    if (contentType.includes("png")) ext = "png";
-    const blob = new Blob([buffer], { type: contentType });
-    formData.append("file", blob, `slip_${Date.now()}.${ext}`);
+    const file = new File([buffer], `slip_${Date.now()}.${ext}`, { type: contentType });
+    formData.append("file", file);
     
     const response = await fetch("https://tmpfiles.org/api/v1/upload", {
       method: "POST",
@@ -577,13 +601,16 @@ ${addressToDisplay}
           });
 
           const shopDisplay = shopName || "Yomiie Pre-Order Shop";
-          const formattedItemsHtml = cleanPayload.items.map((it, idx) => {
-            return `<tr>
-              <td style="padding: 10px; border-bottom: 1px solid #f0f0f0;">${idx + 1}. ${it.itemName}</td>
-              <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: center;">${it.quantity}</td>
-              <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; color: #888; font-style: italic;">${it.notes || "-"}</td>
-            </tr>`;
-          }).join("");
+          const formattedAccount = cleanPayload.customerAccount ? (cleanPayload.customerAccount.startsWith("@") ? cleanPayload.customerAccount : `@${cleanPayload.customerAccount}`) : "@";
+          const remoteAreaReply = (cleanPayload.remoteAreaSelection === "อยู่ค่า" || cleanPayload.isRemoteArea) ? "อยู่" : "ไม่อยู่";
+
+          const formatNumber = (num: any) => {
+            if (num === undefined || num === null || num === "") return "-";
+            const str = String(num).replace(/,/g, '');
+            const parsed = Number(str);
+            if (isNaN(parsed)) return str;
+            return parsed.toLocaleString('en-US');
+          };
 
           const customAnswersHtml = (cleanPayload.customAnswers && cleanPayload.customAnswers.length > 0)
             ? `<div style="background-color: #fafafa; border-left: 4px solid #db5984; padding: 12px; margin-top: 15px; border-radius: 4px;">
@@ -594,53 +621,46 @@ ${addressToDisplay}
               </div>`
             : "";
 
-          const fullAddress = `${cleanPayload.detailAddress} ต. ${cleanPayload.subdistrict} อ. ${cleanPayload.district} จ. ${cleanPayload.province} ${cleanPayload.postalCode}`;
-
           const htmlContent = `
             <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
               <div style="background: linear-gradient(135deg, #eb5e45, #db5984); padding: 30px 20px; text-align: center; color: white;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 1px;">🎈 ใบสรุปรายการจองสินค้า</h1>
-                <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">ขอบพระคุณสำหรับออเดอร์พรีออเดอร์นะคะ ร้าน ${shopDisplay} ยินดีให้บริการค่ะ</p>
+                <h1 style="margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 1px;">🧾ใบสรุปการรายการสั่งซื้อ</h1>
+                <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">ขอบคุณสำหรับคำสั่งซื้อนะคะ หากพบข้อผิดพลาดสามารถติดต่อร้านได้เสมอค่า</p>
               </div>
               <div style="padding: 24px; color: #333; line-height: 1.6;">
-                <p>สวัสดีคุณ <strong>${cleanPayload.name}</strong> (Account : <span style="color: #db5984; font-weight: bold;">${cleanPayload.customerAccount}</span>),</p>
-                <p>ทางร้านได้รับข้อมูลฟอร์มและตรวจสอบหลักฐานการชำระเงินเรียบร้อยแล้วค่ะ นี่คือใบสรุปข้อมูลการสั่งซื้อเพื่อการตรวจสอบออเดอร์สะดวดรวดเร็วของท่านนะคะ</p>
+                <p>สวัสดีคุณ <strong>${formattedAccount}</strong>,</p>
+                <p>ทางร้านได้รับข้อมูลเรียบร้อยค่า อัพเดทสถานะในเว็บภายใน 1-3 วันนะคะ🌐</p>
                 
-                <h3 style="color: #eb5e45; border-bottom: 2px solid #fbebeb; padding-bottom: 6px; margin-top: 25px;">📦 รายการสินค้า</h3>
-                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                  <thead>
-                    <tr style="background-color: #fbebeb; color: #db5984; text-align: left;">
-                      <th style="padding: 10px;">ชื่อสินค้า</th>
-                      <th style="padding: 10px; text-align: center;">จำนวน/ชิ้น</th>
-                      <th style="padding: 10px;">หมายเหตุ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${formattedItemsHtml}
-                  </tbody>
-                </table>
+                <h3 style="color: #eb5e45; border-bottom: 2px solid #fbebeb; padding-bottom: 6px; margin-top: 25px;">🛒 รายการสั่งซื้อ</h3>
+                <div style="background-color: #faf9f8; padding: 15px; border-radius: 8px; border: 1px dashed #f5efec; font-size: 13px;">
+                  ${cleanPayload.items.map((it, idx) => {
+                    return `<div style="${idx > 0 ? 'margin-top: 12px; border-top: 1px dashed #eee; padding-top: 12px;' : ''} line-height: 1.6; white-space: pre-wrap;">${it.itemName}${it.notes ? `<br/>${it.notes}` : ""}</div>`;
+                  }).join("")}
+                </div>
 
                 ${customAnswersHtml}
 
-                <h3 style="color: #eb5e45; border-bottom: 2px solid #fbebeb; padding-bottom: 6px; margin-top: 25px;">📍 ที่อยู่จัดส่ง</h3>
-                <p style="background-color: #faf9f8; padding: 12px; border-radius: 8px; border: 1px dashed #f5efec; font-size: 13px; margin: 0;">
-                  ${fullAddress} <br/>
-                  <strong>เบอร์โทรศัพท์:</strong> ${cleanPayload.phone} <br/>
-                  <strong>ช่องทางการติดต่อ:</strong> ${cleanPayload.contact}
+                <h3 style="color: #eb5e45; border-bottom: 2px solid #fbebeb; padding-bottom: 6px; margin-top: 25px;">📮ที่อยู่จัดส่ง</h3>
+                <p style="background-color: #faf9f8; padding: 15px; border-radius: 8px; border: 1px dashed #f5efec; font-size: 13px; margin: 0; white-space: pre-wrap; line-height: 1.6;">${cleanPayload.shippingInfo}</p>
+                
+                <p style="margin-top: 12px; font-size: 13px; color: #333; line-height: 1.6;">
+                  <strong>พื้นที่ห่างไกล:</strong> ${remoteAreaReply}
                 </p>
 
                 <h3 style="color: #eb5e45; border-bottom: 2px solid #fbebeb; padding-bottom: 6px; margin-top: 25px;">💵 รายละเอียดการชำระเงิน</h3>
-                <p style="font-size: 14px; margin: 0;">
-                  <strong>ยอดรวม (สินค้า+ค่าส่ง):</strong> <span style="font-weight: bold;">${cleanPayload.totalAmount || '-'} บาท</span> <br/>
+                <p style="font-size: 14px; margin: 0; line-height: 1.8;">
+                  <strong>ยอดรวม (สินค้า+ค่าส่ง):</strong> <span style="font-weight: bold;">${formatNumber(cleanPayload.totalAmount)} บาท</span> <br/>
                   <strong>วิธีการชำระ:</strong> <span style="font-weight: bold;">${paymentMethodStr}</span> <br/>
                   <strong>การชำระค่าส่ง:</strong> <span style="font-weight: bold;">${shippingPaymentStatusStr}</span> <br/>
-                  <strong>ยอดเงินโอนจริง:</strong> <span style="color: #eb5e45; font-weight: bold; font-size: 16px;">${cleanPayload.transferAmount} บาท</span> ${cleanPayload.isRemoteArea ? '(รวมพื้นที่ห่างไกล +20 บาท)' : ''}<br/>
+                  <strong>ยอดเงินโอนจริง:</strong> <span style="color: #eb5e45; font-weight: bold; font-size: 16px;">${formatNumber(cleanPayload.transferAmount)} บาท</span><br/>
                   <strong>วัน-เวลาโอน:</strong> ${cleanPayload.transferTime}
                 </p>
 
+                <h3 style="color: #eb5e45; border-bottom: 2px solid #fbebeb; padding-bottom: 6px; margin-top: 25px;">‼️เพิ่มเติม</h3>
+                <p style="background-color: #faf9f8; padding: 15px; border-radius: 8px; border: 1px dashed #f5efec; font-size: 13px; margin: 0; white-space: pre-wrap; line-height: 1.6;">${cleanPayload.additionalNotes ? cleanPayload.additionalNotes.trim() : "-"}</p>
+
                 <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #888; font-size: 11px;">
-                  <p style="margin: 0;">หากมีข้อสงสัยหรืออัพเดทสถานะสินค้าเพิ่มเติม สามารถทักแชทร้านค้าได้โดยตรงเลยนะคะ 💖</p>
-                  <p style="margin: 4px 0 0 0;">ออเดอร์นี้บันทึกเมื่อ: ${new Date().toLocaleString('th-TH')}</p>
+                  <p style="margin: 0;">ออเดอร์นี้บันทึกเมื่อ: ${new Date().toLocaleString('th-TH')}</p>
                 </div>
               </div>
             </div>
@@ -649,7 +669,7 @@ ${addressToDisplay}
           await transporter.sendMail({
             from: `"${shopDisplay}" <${activeSenderEmail}>`,
             to: cleanPayload.customerGmail.trim(),
-            subject: `🎉 [สรุปรายการจอง] ได้รับออเดอร์จากคุณ ${cleanPayload.name} - ${shopDisplay} เรียบร้อยแล้วค่ะ!`,
+            subject: `📩 [ใบสรุปรายการ] @yomiie.core ได้รับคำสั่งซื้อเรียบร้อยค่ะ 🛍`,
             html: htmlContent
           });
 

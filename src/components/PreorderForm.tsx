@@ -631,7 +631,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
                   className="w-full text-xs p-3 border border-gray-200 focus:border-[#eb5e45] focus:ring-1 focus:ring-[#fbebeb] rounded-xl text-gray-950 font-sans font-mono"
                 />
                 <p className="text-[10px] text-gray-400 font-sans italic pt-0.5">
-                  *ระบบจะส่งอีเมลสรุปรายละเอียดคำสั่งซื้อเข้าเมลนี้ทันทีค่ะ
+                  *ระบบจะส่งอีเมลใบสรุปรายการคำสั่งซื้อเข้าเมลนี้ทันทีค่ะ
                 </p>
               </div>
             </div>
@@ -803,7 +803,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
                 >
                   <option value="" disabled>--- เลือกวิธีการชำระเงิน ---</option>
                   <option value="ชำระเต็ม">ชำระเต็ม</option>
-                  <option value="มัดจำ 50% ของราคาสินค้า">มัดจำ 50% ของราคาสินค้า</option>
+                  <option value="มัดจำ 50%">มัดจำ 50%</option>
                   <option value="อื่นๆ">อื่นๆ</option>
                 </select>
 
@@ -851,7 +851,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
                 >
                   <option value="" disabled>--- เลือกตัวเลือกการชำระค่าส่ง ---</option>
                   <option value="ชำระเลยค่า">ชำระเลยค่า</option>
-                  <option value="ยังค่า รอชำระตอนถึงไทยค่า">ยังค่า รอชำระตอนถึงไทยค่า</option>
+                  <option value="ชำระตอนถึงไทย">ชำระตอนถึงไทย</option>
                   <option value="ยังค่า ต้องการรวมกับสินค้าก่อนหน้าค่า">ยังค่า ต้องการรวมกับสินค้าก่อนหน้าค่า</option>
                 </select>
               </div>

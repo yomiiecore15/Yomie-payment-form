@@ -322,7 +322,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             }`}
           >
             <Settings2 className="w-3.5 h-3.5" />
-            <span>ตั้งค่าระบบสั่งพรี</span>
+            <span>ตั้งค่า</span>
           </button>
           
           <button
@@ -332,7 +332,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             }`}
           >
             <ClipboardList className="w-3.5 h-3.5" />
-            <span>ประวัติสลิปใบสั่งซื้อ ({localOrders.length})</span>
+            <span>ออเดอร์({localOrders.length})</span>
           </button>
 
           <button
@@ -342,7 +342,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             }`}
           >
             <Database className="w-3.5 h-3.5" />
-            <span>ติดตั้งชีตร้าน</span>
+            <span>ติดตั้งชีท</span>
           </button>
         </div>
 
@@ -386,29 +386,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   </p>
                 </div>
 
-                <div className="space-y-4 p-4 bg-[#fff0ee]/40 rounded-2xl border border-[#fee2de] text-left">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[12px] font-black text-gray-800 block flex items-center gap-1.5">
+                <div className="space-y-4 pt-3 border-t border-gray-100 text-left">
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-[11px] font-black text-[#db5984] tracking-wider uppercase font-mono flex items-center gap-1.5">
                       <Bell className="w-4 h-4 text-[#eb5e45]" />
-                      การตั้งค่าระบบแจ้งเตือน LINE
+                      การตั้งค่าระบบแจ้งเตือน LINE Bot
                     </label>
                     <span className="text-[9px] bg-[#eb5e45]/10 text-[#eb5e45] px-2 py-0.5 rounded-lg font-bold font-sans">
                       ส่งผลรวมเข้าไลน์กลุ่ม
                     </span>
                   </div>
 
-                  {/* Red Alert: LINE Notify is Discontinued */}
-                  <div className="bg-[#fef5f4] border border-[#fddbd4] rounded-xl p-3 space-y-2 text-[10.5px] leading-relaxed text-gray-700">
-                    <div className="flex items-center gap-1.5 font-bold text-[#eb5e45] text-[11px]">
-                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#eb5e45] animate-ping" />
-                      ⚠️ LINE Notify สิ้นสุดการให้บริการแล้ว (End of Service)
-                    </div>
-                    <p className="text-gray-650 font-sans">
-                      ตามภาพประกาศอย่างเป็นทางการของ LINE บริการ <strong>LINE Notify (แบบเดิม) ได้ปิดตัวลงสมบูรณ์ตั้งแต่วันที่ 31 มี.ค. 2025</strong> เรียบร้อยแล้วค่ะ ทางระบบจึงได้ปรับปรุงรูปแบบมาส่งผ่านระบบ <strong>LINE Bot</strong> แทนพื่อทำงานได้อย่างถาวรและเสถียรค่ะ
-                    </p>
-                  </div>
-
-                  <div className="space-y-3 font-sans">
+                  <div className="hidden">
                     <span className="text-[11px] font-black text-gray-850 block">🛡️ ขั้นตอนการติดตั้งบอทในกลุ่มไลน์สำหรับแจ้งเตือนพรียอด:</span>
                     <ol className="list-decimal pl-4.5 space-y-3 text-[11px] leading-relaxed text-gray-750">
                       <li>
@@ -420,30 +409,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <div className="space-y-2 mt-2">
                           {/* Option 1: Development Link - Highly recommended for testing */}
                           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-[11px] leading-relaxed text-emerald-900 font-sans">
-                            💡 <strong>ตัวเลือกที่ 1: ลิงก์ทดสอบด่วน (ais-dev) — แนะนำมากสำหรับการตั้งค่าครั้งแรก</strong>
-                            <p className="mt-1 text-gray-700">
-                              ลิงก์นี้เชื่อมต่อโดยตรงกับโค้ดที่คุณกำลังแก้ไขสด ๆ ในหน้าพัฒนาระบบ ทำให้กดปุ่ม <strong>Verify ใน LINE Console ผ่าน 200 OK ทันทีรวดเร็วที่สุด 🚀</strong> และสามารถรับข้อมูลตอบกลับเป็น Group ID ได้แบบเรียลไทม์:
+                            💡 <strong>ตัวเลือกที่ 1 (แนะนำและต้องใช้คลิก Verify): ลิงก์ระบบจริงสาธารณะ (ais-pre) — ผ่านเกณฑ์แน่นอนค่ะ!</strong>
+                            <p className="mt-1 text-gray-700 font-sans">
+                              ลิงก์นี้เชื่อมต่อเป็นสาธารณะ ทำให้ระบบเซิร์ฟเวอร์ของ LINE เชื่อมโยงได้สมบูรณ์แบบ <strong>เมื่อนำไปใส่ในช่อง Webhook URL และคลิกกดปุ่ม "Verify" จะขึ้นสถานะสมบูรณ์ (Success / 200 OK) ผ่านทันทีค่ะ! 🚀</strong> (หากใช้ลิงก์อื่นที่มีคำว่า dev จะกด Verify ไม่ผ่านเพราะระบบติดสิทธิ์แอดมินนะคะ)
                             </p>
                             <div className="my-2 p-2 bg-white rounded-lg border border-emerald-300 font-mono text-[10px] break-all relative group text-emerald-850">
                               {lineChannelAccessToken.trim() ? (
-                                <span>{`${window.location.origin}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`}</span>
+                                <span>{`${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`}</span>
                               ) : (
-                                <span className="text-gray-400">{`${window.location.origin}/api/line-webhook`}</span>
+                                <span className="text-gray-400">{`${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`}</span>
                               )}
                               <button
                                 type="button"
                                 onClick={() => {
                                   const urlToCopy = lineChannelAccessToken.trim()
-                                    ? `${window.location.origin}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`
-                                    : `${window.location.origin}/api/line-webhook`;
+                                    ? `${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`
+                                    : `${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`;
+                                  const activeUrl = urlToCopy.replace("-dev-", "-pre-");
                                   try {
                                     const textEl = document.createElement("input");
-                                    textEl.value = urlToCopy;
+                                    textEl.value = activeUrl;
                                     document.body.appendChild(textEl);
                                     textEl.select();
                                     document.execCommand("copy");
                                     document.body.removeChild(textEl);
-                                    alert("คัดลอกลิงก์ Webhook ทดสอบ (ais-dev) เรียบร้อยแล้วค่ะ! นำไปวางในช่อง Webhook URL ใน LINE Console ได้เลยน๊า 💖");
+                                    alert("คัดลอกลิงก์ Webhook ระบบจริงสาธารณะ (ais-pre) เรียบร้อยแล้วค่ะ! นำไปวางในช่อง Webhook URL ใน LINE Console เพื่อกดปุ่ม Verify ได้เลยน๊า 💖");
                                   } catch (e) {
                                     console.error(e);
                                   }
@@ -457,16 +447,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                           {/* Option 2: Pure Tokenless Webhook Link - Super Simple! */}
                           <div className="bg-indigo-50 border border-indigo-150 rounded-xl p-3 text-[11px] leading-relaxed text-indigo-900 font-sans">
-                            ✨ <strong>ตัวเลือกที่ 2: ลิงก์แบบไม่มี Token ยาว ๆ (สั้นและปลอดภัยที่สุด)</strong>
+                            ✨ <strong>ตัวเลือกที่ 2: ลิงก์ย่อสั้นของระบบจริง (ปลอดภัยสูงสุดสำหรับการใช้งานถาวร)</strong>
                             <p className="mt-1 text-gray-700">
                               หากคุณกรอกและกดบันทึกรหัส <strong>LINE Channel Access Token</strong> ในหน้านี้สำเร็จแล้ว คุณสามารถเอารหัส Token ออกจากท้าย URL แล้วใช้ทางลัดลิงก์สั้น ๆ นี้ได้เลยค่ะ ปลอดภัยและเหมาะกับบอทระยะยาวด้วย:
                             </p>
                             <div className="my-2 p-2 bg-white rounded-lg border border-indigo-200 font-mono text-[10px] break-all relative group text-indigo-800">
-                              <span>{`${window.location.origin}/api/line-webhook`}</span>
+                              <span>{`${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`}</span>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const urlToCopy = `${window.location.origin}/api/line-webhook`;
+                                  const urlToCopy = `${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`;
                                   try {
                                     const textEl = document.createElement("input");
                                     textEl.value = urlToCopy;
@@ -488,22 +478,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                           {/* Option 3: Shared Link (ais-pre) */}
                           <div className="bg-amber-50 border border-amber-150 rounded-xl p-3 text-[11px] leading-relaxed text-amber-900 font-sans">
-                            🌐 <strong>ตัวเลือกที่ 3: ลิงก์ระบบจริงสาธารณะ (ais-pre)</strong>
+                            🛑 <strong>ตัวเลือกที่ 3 (สำรองเท่านั้น): ลิงก์สำหรับทดลองส่วนตัว (ais-dev) — ⚠️ กด Verify ไม่ผ่านน๊า</strong>
                             <p className="mt-1 text-gray-700">
-                              ใช้สำหรับการขึ้นระบบที่แชร์ให้เพื่อน ๆ หรือลูกค้าในภายหลัง (ควรใช้หลังจากกดแชร์/Deploy ฝั่งขวาของ AI Studio แล้วนะคะ หากยังไม่เคยกดแชร์หน้าเว็บนี้จะทำให้ตรวจสอบขึ้น 404):
+                              ใช้สำหรับเชื่อมโยงการทดสอบภายในรหัสส่วนบุคคลเท่านั้น เนื่องจากมีโครงคุ้มกันความปลอดภัยครอบอยู่หลังบ้าน หากนำไปใส่ในหน้า LINE Developers Console แล้วคลิกปุ่ม Verify ระบบภายนอกของ LINE จะถูกปฏิเสธและขึ้น Error ทันทีค่ะ แนะนำให้เลือกแชร์ลิงก์ตัวเลือกหลัก (ตัวเลือกที่ 1 หรือ 2) ด้านบนแทนนะคะ:
                             </p>
-                            <div className="my-2 p-2 bg-white rounded-lg border border-amber-250 font-mono text-[10px] break-all relative group text-amber-800">
+                            <div className="my-2 p-2 bg-white rounded-lg border border-amber-250 font-mono text-[10px] break-all relative group text-amber-850">
                               {lineChannelAccessToken.trim() ? (
-                                <span>{`${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`}</span>
+                                <span>{`${window.location.origin}/${lineChannelAccessToken.trim() ? `api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}` : 'api/line-webhook'}`}</span>
                               ) : (
-                                <span className="text-gray-400">{`${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`}</span>
+                                <span className="text-gray-400">{`${window.location.origin}/api/line-webhook`}</span>
                               )}
                               <button
                                 type="button"
                                 onClick={() => {
                                   const urlToCopy = lineChannelAccessToken.trim()
-                                    ? `${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`
-                                    : `${window.location.origin.replace("-dev-", "-pre-")}/api/line-webhook`;
+                                    ? `${window.location.origin}/api/line-webhook?token=${encodeURIComponent(lineChannelAccessToken.trim())}`
+                                    : `${window.location.origin}/api/line-webhook`;
                                   try {
                                     const textEl = document.createElement("input");
                                     textEl.value = urlToCopy;
@@ -511,7 +501,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                     textEl.select();
                                     document.execCommand("copy");
                                     document.body.removeChild(textEl);
-                                    alert("คัดลอกลิงก์ Webhook สาธารณะ (ais-pre) เรียบร้อยแล้วค่ะ! นำไปวางในช่อง Webhook URL ใน LINE Console 💖");
+                                    alert("⚠️ คัดลอกลิงก์พัฒนา (ais-dev) สำเร็จ (กรุณาใช้อีก 2 ตัวเลือกด้านบนในการตั้งค่าจริงใน LINE Console เสมอลักษณะนี้จะไม่ผ่านจ้า!)");
                                   } catch (e) {
                                     console.error(e);
                                   }
@@ -549,7 +539,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
 
                     {/* Live Webhook Detections */}
-                    <div className="bg-emerald-50/50 border border-emerald-150 rounded-2xl p-4 space-y-3">
+                    <div className="hidden">
                       <div className="flex justify-between items-center">
                         <span className="text-[11px] font-black text-emerald-800 tracking-wider font-mono flex items-center gap-1">
                           <MessageSquare className="w-3.5 h-3.5" /> 📡 ตรวจพบข้อมูลล่าสุดจาก LINE Webhook
@@ -1163,7 +1153,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             if (cleanStatus === 'ชำระเลยค่า' || cleanStatus === 'ชำระเลย' || cleanStatus.includes('ชำระเลย') || cleanStatus.includes('ชำระค่าส่งเลย')) {
                               label = 'ชำระเลย';
                               textColorClass = 'text-sky-500';
-                            } else if (cleanStatus === 'ยังค่า รอชำระตอนถึงไทย' || cleanStatus === 'ยังค่า รอชำระตอนถึงไทยค่า' || cleanStatus === 'จ่ายตอนถึงไทย' || cleanStatus.includes('รอชำระตอนถึงไทย')) {
+                            } else if (cleanStatus === 'ยังค่า รอชำระตอนถึงไทย' || cleanStatus === 'ยังค่า รอชำระตอนถึงไทยค่า' || cleanStatus === 'จ่ายตอนถึงไทย' || cleanStatus === 'ชำระตอนถึงไทย' || cleanStatus.includes('รอชำระตอนถึงไทย') || cleanStatus.includes('ชำระตอนถึงไทย')) {
                               label = 'จ่ายตอนถึงไทย';
                               textColorClass = 'text-red-500';
                             } else if (cleanStatus === 'ยังค่า ต้องการรวมกับสินค้าาก่อนหน้านี้' || cleanStatus === 'ยังค่า ต้องการรวมกับสินค้าก่อนหน้าค่า' || cleanStatus === 'รอรวมของ' || cleanStatus.includes('ต้องการรวมกับสินค้า') || cleanStatus.includes('รวมกับสินค้า')) {
