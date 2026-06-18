@@ -600,7 +600,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
           <div className="space-y-4 pt-2">
             <h3 className="text-sm font-black text-[#db5984] border-l-4 border-[#db5984] pl-2 font-sans flex items-center gap-1.5">
               <User className="w-4 h-4 shrink-0" />
-              1. ข้อมูลลูกค้า
+              ข้อมูลลูกค้า
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -641,7 +641,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
           <div className="space-y-4 pt-2">
             <h3 className="text-sm font-black text-[#db5984] border-l-4 border-[#db5984] pl-2 font-sans flex items-center gap-1.5">
               <ShoppingBag className="w-4 h-4 shrink-0" />
-              2. รายการสั่งซื้อ <span className="text-red-500">*</span>
+              รายการสั่งซื้อ <span className="text-red-500">*</span>
             </h3>
 
             <div className="space-y-2">
@@ -663,7 +663,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
           <div className="space-y-4 pt-2">
             <h3 className="text-sm font-black text-[#db5984] border-l-4 border-[#db5984] pl-2 font-sans flex items-center gap-1.5">
               <MapPin className="w-4 h-4 shrink-0" />
-              3. ชื่อ / ที่อยู่ / เบอร์โทร ในการจัดส่ง <span className="text-red-500">*</span>
+              ชื่อ / ที่อยู่ / เบอร์โทร ในการจัดส่ง <span className="text-red-500">*</span>
             </h3>
 
             <div className="space-y-2">
@@ -863,7 +863,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
             <div className="space-y-4 pt-2">
               <h3 className="text-sm font-black text-[#db5984] border-l-4 border-[#db5984] pl-2 font-sans flex items-center gap-1.5">
                 <MessageSquare className="w-4 h-4 shrink-0" />
-                4. ข้อมูลเพิ่มเติม
+                ข้อมูลเพิ่มเติม
               </h3>
               <div className="space-y-4 bg-[#fcfbfa] p-4 border border-[#f5efec] rounded-2xl">
                 {config.customQuestions.map((q) => {
@@ -920,7 +920,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
           <div className="space-y-4 pt-2">
             <h3 className="text-sm font-black text-[#db5984] border-l-4 border-[#db5984] pl-2 font-sans flex items-center gap-1.5">
               <CreditCard className="w-4 h-4 shrink-0" />
-              {config.customQuestions && config.customQuestions.length > 0 ? '5' : '4'}. โอนเงินและแนบหลักฐานชำระเงิน
+              โอนเงินและแนบหลักฐานชำระเงิน
             </h3>
 
             {/* Shop bank accounts display details */}
