@@ -14,9 +14,9 @@ export const INITIAL_CONFIG: SheetConfig = {
   spreadsheetUrl: "",
   spreadsheetId: "",
   sheetName: "พื้นที่จัดส่งห่างไกล",
-  isConfigured: true,
+  isConfigured: false,
   useFallbackSample: true,
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbyU8E4L9SeIJ52rRxHBTzkAQWVpMlI3Ohh8JV4K90XHyM463R6TeTHrTiyPiarX_imoIA/exec",
+  appsScriptUrl: "",
   lineToken: "",
   lineChannelAccessToken: "",
   lineGroupId: "",
@@ -196,22 +196,6 @@ function doPost(e) {
     } catch (styleErr) {
       // Ignore styling errors safely
     }
-
-    // === OPTIONAL: SEND DIRECT LINE NOTIFICATION FROM GOOGLE CLOUD (CORS-FREE!) ===
-    // If you are deploying on Static platforms like Vercel/Netlify, you should configure your LINE keys below!
-    // Paste your credentials inside the quotes to make notifications work instantly.
-    var CONFIG_LINE_NOTIFY_TOKEN = "";         // 1. วางคีย์ LINE Notify เดิมของคุณที่นี่ (ถ้ามี)
-    var CONFIG_LINE_CHANNEL_TOKEN = "";        // 2. วางคีย์ LINE Bot Channel Access Token ที่นี่ (แนะนำ)
-    var CONFIG_LINE_GROUP_ID = "";             // 3. วางคีย์ LINE Bot Group ID หรือ User ID ขึ้นต้นด้วย U... ที่นี่
-
-    sendLineNotificationFromSheets(
-      CONFIG_LINE_NOTIFY_TOKEN,
-      CONFIG_LINE_CHANNEL_TOKEN,
-      CONFIG_LINE_GROUP_ID,
-      data,
-      finalSlipUrl,
-      paymentMethodStr
-    );
     
     return ContentService.createTextOutput(JSON.stringify({
       "status": "success",
@@ -223,90 +207,6 @@ function doPost(e) {
       "status": "error",
       "message": err.toString()
     })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-/**
- * Sends a gorgeous notification to LINE Notify or LINE Bots directly from Google script servers
- */
-function sendLineNotificationFromSheets(notifyToken, channelToken, groupId, data, slipUrl, paymentMethod) {
-  var itemsStr = "";
-  if (data.items && Array.isArray(data.items) && data.items.length > 0) {
-    itemsStr = data.items.map(function(it, idx) {
-      return (idx + 1) + ". " + (it.itemName || "") + " (x" + (it.quantity || 1) + ")";
-    }).join("\n");
-  } else {
-    itemsStr = data.itemsText || "-";
-  }
-  
-  var msg = "\n🔔 YOMIE Order (Vercel Direct)\n" +
-            "━━━━━━━━━━━━━━━━━━━\n" +
-            "👤 Account: " + (data.customerAccount || "-") + "\n" +
-            "📩 Gmail: " + (data.customerGmail || "-") + "\n" +
-            "📦 รายการพรีออเดอร์:\n" + itemsStr + "\n\n" +
-            "📮 ที่อยู่จัดส่ง: " + (data.shippingInfo || "-") + "\n" +
-            "💰 ยอดรวมยอดสั่ง: " + (data.totalAmount || "-") + " บาท\n" +
-            "💳 ชำระผ่าน: " + paymentMethod + "\n" +
-            "⏰ เวลาโอนเงิน: " + (data.transferTimeInSlip || "-") + "\n" +
-            "📝 เพิ่มเติม: " + (data.additionalNotes || "-") + "\n" +
-            "━━━━━━━━━━━━━━━━━━━\n" +
-            "🎉 ได้รับยอดสั่งซื้อใหม่เรียบร้อยแล้วค่ะ! 🥰💖";
-            
-  // 1. Send via LINE Notify Token
-  if (notifyToken && notifyToken.trim() !== "") {
-    try {
-      var payload = {
-        "message": msg
-      };
-      if (slipUrl && slipUrl.trim() !== "") {
-        payload["imageThumbnail"] = slipUrl;
-        payload["imageFullsize"] = slipUrl;
-      }
-      UrlFetchApp.fetch("https://notify-api.line.me/api/notify", {
-        "method": "post",
-        "headers": {
-          "Authorization": "Bearer " + notifyToken.trim()
-        },
-        "payload": payload,
-        "muteHttpExceptions": true
-      });
-    } catch (e) {
-      Logger.log("LINE Notify Error: " + e.toString());
-    }
-  }
-  
-  // 2. Send via LINE Messaging API (Line Bot Client)
-  if (channelToken && channelToken.trim() !== "" && groupId && groupId.trim() !== "") {
-    try {
-      var messages = [
-        {
-          "type": "text",
-          "text": msg
-        }
-      ];
-      if (slipUrl && slipUrl.trim() !== "") {
-        messages.push({
-          "type": "image",
-          "originalContentUrl": slipUrl,
-          "previewImageUrl": slipUrl
-        });
-      }
-      var body = {
-        "to": groupId.trim(),
-        "messages": messages
-      };
-      UrlFetchApp.fetch("https://api.line.me/v2/bot/message/push", {
-        "method": "post",
-        "headers": {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + channelToken.trim()
-        },
-        "payload": JSON.stringify(body),
-        "muteHttpExceptions": true
-      });
-    } catch (e) {
-      Logger.log("LINE Bot Messaging API Error: " + e.toString());
-    }
   }
 }
 `;

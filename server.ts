@@ -365,15 +365,14 @@ async function startServer() {
 
   // Submit Preorder Order Route
   app.post("/api/submit-order", async (req, res) => {
-    try {
-      const data: OrderSubmission = req.body;
+    const data: OrderSubmission = req.body;
 
-      if (!data.name || !data.phone || !data.items || data.items.length === 0) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วนด้วยนะคะ (ชื่อ, เบอร์โทร, รายการสินค้า)" 
-        });
-      }
+    if (!data.name || !data.phone || !data.items || data.items.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วนด้วยนะคะ (ชื่อ, เบอร์โทร, รายการสินค้า)" 
+      });
+    }
 
     const { appsScriptUrl, lineToken, lineChannelAccessToken, lineGroupId, senderEmail, senderAppPass, shopName, ...cleanPayload } = data;
 
@@ -452,8 +451,7 @@ async function startServer() {
           headers: {
             "Content-Type": "text/plain;charset=utf-8"
           },
-          body: JSON.stringify(cleanPayload),
-          signal: AbortSignal.timeout(10000)
+          body: JSON.stringify(cleanPayload)
         });
 
         if (sheetsResponse.ok) {
@@ -479,7 +477,7 @@ async function startServer() {
       try {
 
         const formattedItems = cleanPayload.items.map((it) => {
-          return (it.itemName || "").trim();
+          return it.itemName.trim();
         }).join("\n");
 
         const addressToDisplay = (cleanPayload.shippingInfo || "").trim();
@@ -542,8 +540,7 @@ ${addressToDisplay}
             body: JSON.stringify({
               to: activeLineGroupId!.trim(),
               messages: messagesPayload
-            }),
-            signal: AbortSignal.timeout(10000)
+            })
           });
 
           if (lineMsgResponse.ok) {
@@ -567,8 +564,7 @@ ${addressToDisplay}
               "Content-Type": "application/x-www-form-urlencoded",
               "Authorization": `Bearer ${activeLineToken!.trim()}`
             },
-            body: formData,
-            signal: AbortSignal.timeout(10000)
+            body: formData
           });
 
           if (lineResponse.ok) {
@@ -691,23 +687,16 @@ ${addressToDisplay}
     const activeSenderEmail = (senderEmail && senderEmail.trim() !== "") ? senderEmail.trim() : process.env.SMTP_USER;
     const activeSenderPass = (senderAppPass && senderAppPass.trim() !== "") ? senderAppPass.trim() : process.env.SMTP_PASS;
 
-      return res.json({
-        success: true,
-        spreadsheetConnected: !!activeAppsScriptUrl,
-        lineConnected: !!activeLineToken || (!!activeLineChannelAccessToken && !!activeLineGroupId),
-        emailConnected: !!cleanPayload.customerGmail && !!activeSenderEmail && !!activeSenderPass,
-        spreadsheetSuccess,
-        lineSuccess,
-        emailSuccess,
-        logs
-      });
-    } catch (globalErr: any) {
-      console.error("CRITICAL ERROR inside /api/submit-order:", globalErr);
-      return res.status(500).json({
-        success: false,
-        message: `เกิดข้อผิดพลาดรุนแรงในการประมวลผลข้อมูล: ${globalErr.message || globalErr}`
-      });
-    }
+    return res.json({
+      success: true,
+      spreadsheetConnected: !!activeAppsScriptUrl,
+      lineConnected: !!activeLineToken || (!!activeLineChannelAccessToken && !!activeLineGroupId),
+      emailConnected: !!cleanPayload.customerGmail && !!activeSenderEmail && !!activeSenderPass,
+      spreadsheetSuccess,
+      lineSuccess,
+      emailSuccess,
+      logs
+    });
   });
 
   // Vite middleware for development
