@@ -451,7 +451,8 @@ async function startServer() {
           headers: {
             "Content-Type": "text/plain;charset=utf-8"
           },
-          body: JSON.stringify(cleanPayload)
+          body: JSON.stringify(cleanPayload),
+          signal: AbortSignal.timeout(10000)
         });
 
         if (sheetsResponse.ok) {
@@ -540,7 +541,8 @@ ${addressToDisplay}
             body: JSON.stringify({
               to: activeLineGroupId!.trim(),
               messages: messagesPayload
-            })
+            }),
+            signal: AbortSignal.timeout(10000)
           });
 
           if (lineMsgResponse.ok) {
@@ -564,7 +566,8 @@ ${addressToDisplay}
               "Content-Type": "application/x-www-form-urlencoded",
               "Authorization": `Bearer ${activeLineToken!.trim()}`
             },
-            body: formData
+            body: formData,
+            signal: AbortSignal.timeout(10000)
           });
 
           if (lineResponse.ok) {

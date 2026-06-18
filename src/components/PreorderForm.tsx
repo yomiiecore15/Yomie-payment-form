@@ -560,7 +560,7 @@ export const PreorderForm: React.FC<PreorderFormProps> = ({ config, onSuccess })
           district: submissionPayload.district || "อำเภอเมือง"
         } as any);
       } else {
-        setFormError("ขออภัยค่ะ! ไม่สามารถเชื่อมต่อระบบหลังบ้านเพื่อบันทึกชีตออเดอร์ได้ กรุณาตรวจสอบการแชร์ชีตหรือตั้งค่า Google Webhook ในหลังบ้านร้านค้าให้ถูกต้องนะคะ");
+        setFormError(`ขออภัยค่ะ! ไม่สามารถบันทึกรายการคำสั่งซื้อได้ (ข้อผิดพลาด: ${err.message || err}) กรุณาตรวจสอบการแชร์ชีตหรือตั้งค่า Google Webhook ในหน้าแอดมินหลังบ้านร้านค้าให้ถูกต้องนะคะ`);
       }
     } finally {
       setIsSubmitting(false);
