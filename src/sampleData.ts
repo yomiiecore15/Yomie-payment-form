@@ -37,12 +37,25 @@ export const INITIAL_CONFIG: SheetConfig = {
  * If running on a custom domain/GitHub Pages, use the saved backendUrl or fall back to the live Cloud Run production URL.
  */
 export function getBackendUrl(configBackendUrl?: string): string {
+  const hostname = window.location.hostname;
+  const isLocalOrWorkspace = 
+    hostname.includes("run.app") ||
+    hostname.includes("localhost") ||
+    hostname === "127.0.0.1" ||
+    hostname.includes("googleusercontent.com") ||
+    hostname.includes("webcontainer.io");
+
+  // ALWAYS force local relative routing when running inside the workspace, preview, or development server
+  if (isLocalOrWorkspace) {
+    return "";
+  }
+
   if (configBackendUrl && configBackendUrl.trim() !== "") {
     const trimmed = configBackendUrl.trim();
-    return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
-  }
-  if (window.location.hostname.includes("run.app")) {
-    return "";
+    // Skip if they erroneously set backend URL to their static frontend hosting domain (e.g., github.io)
+    if (!trimmed.includes(hostname)) {
+      return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+    }
   }
   return "https://ais-pre-p5qo4jin4iijbtadrngbhz-980569590057.asia-southeast1.run.app";
 }
@@ -51,12 +64,25 @@ export function getBackendUrl(configBackendUrl?: string): string {
  * Returns a guaranteed absolute backend base URL (critical for LINE webhooks, slip images, etc.)
  */
 export function getAbsoluteBackendUrl(configBackendUrl?: string): string {
+  const hostname = window.location.hostname;
+  const isLocalOrWorkspace = 
+    hostname.includes("run.app") ||
+    hostname.includes("localhost") ||
+    hostname === "127.0.0.1" ||
+    hostname.includes("googleusercontent.com") ||
+    hostname.includes("webcontainer.io");
+
+  // ALWAYS use current origin when running inside the workspace, preview, or development server
+  if (isLocalOrWorkspace) {
+    return window.location.origin;
+  }
+
   if (configBackendUrl && configBackendUrl.trim() !== "") {
     const trimmed = configBackendUrl.trim();
-    return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
-  }
-  if (window.location.hostname.includes("run.app")) {
-    return window.location.origin;
+    // Skip if they erroneously set backend URL to their static frontend hosting domain (e.g., github.io)
+    if (!trimmed.includes(hostname)) {
+      return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+    }
   }
   return "https://ais-pre-p5qo4jin4iijbtadrngbhz-980569590057.asia-southeast1.run.app";
 }
